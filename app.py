@@ -152,7 +152,6 @@ def send_delivery_report(sender_email, sender_password, report_file):
             msg.add_attachment(file.read(), maintype='application', subtype='octet-stream', filename=os.path.basename(report_file))
 
         server = smtplib.SMTP_SSL("285235.vps-10.com", 465)
-        server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
