@@ -123,6 +123,9 @@ def send_email(sender_email, sender_password, row, subject, custom_html):
         msg['Subject'] = subject
         msg['From'] = sender_email
         msg['To'] = row['email']
+        msg['Message-ID'] = make_msgid()
+        msg['Date'] = formatdate(localtime=True)
+        
         personalized_html = custom_html.replace("{name}", row['full_name'] or "")
         msg.set_content(generate_email_html(row['full_name'], row['email'], subject, personalized_html), subtype='html')
         server.send_message(msg)
