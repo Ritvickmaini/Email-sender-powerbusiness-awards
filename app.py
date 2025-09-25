@@ -93,7 +93,7 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
 
                     <!-- Signature -->
                     <p style="margin-top:25px; font-size:14px;">
-                      Mark Randell<br/>
+                      Mike Randell<br/>
                       Marketing Executive | Artificialinteligencesummit<br/>
                       <a href="mailto:mike@artificialinteligencesummit.com" style="color:#D7262F;">mike@artificialinteligencesummit.com</a><br/>
                       (+44) 2034517166
