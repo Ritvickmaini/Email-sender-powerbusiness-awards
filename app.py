@@ -116,7 +116,7 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
 
 def send_email(sender_email, sender_password, row, subject, custom_html):
     try:
-        server = smtplib.SMTP("mail.thepowerbusinessawards.com", 587)
+        server = smtplib.SMTP("285235.vps-10.com", 465)
         server.starttls()
         server.login(sender_email, sender_password)
 
@@ -129,7 +129,7 @@ def send_email(sender_email, sender_password, row, subject, custom_html):
         server.send_message(msg)
 
         try:
-            imap = imaplib.IMAP4_SSL("mail.thepowerbusinessawards.com")
+            imap = imaplib.IMAP4_SSL("285235.vps-10.com",993)
             imap.login(sender_email, sender_password)
             imap.append('INBOX.Sent', '', imaplib.Time2Internaldate(time.time()), msg.as_bytes())
             imap.logout()
@@ -152,7 +152,7 @@ def send_delivery_report(sender_email, sender_password, report_file):
         with open(report_file, 'rb') as file:
             msg.add_attachment(file.read(), maintype='application', subtype='octet-stream', filename=os.path.basename(report_file))
 
-        server = smtplib.SMTP("mail.thepowerbusinessawards.com", 587)
+        server = smtplib.SMTP("285235.vps-10.com", 465)
         server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
@@ -166,7 +166,7 @@ def send_delivery_report(sender_email, sender_password, report_file):
 st.title("📨 Automated Email Campaign Manager")
 
 st.header("📤 Send Email Campaign")
-sender_email = st.text_input("Sender Email", value="mark@thepowerbusinessawards.com")
+sender_email = st.text_input("Sender Email", value="mike@artificialinteligencesummit.com")
 sender_password = st.text_input("Password", type="password")
 subject = st.text_input("Email Subject")
 
