@@ -94,8 +94,8 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
                     <!-- Signature -->
                     <p style="margin-top:25px; font-size:14px;">
                       Mark Randell<br/>
-                      Marketing Executive | Power Business Awards<br/>
-                      <a href="mailto:mark@thepowerbusinessawards.com" style="color:#D7262F;">mark@thepowerbusinessawards.com</a><br/>
+                      Marketing Executive | Artificialinteligencesummit<br/>
+                      <a href="mailto:mike@artificialinteligencesummit.com" style="color:#D7262F;">mike@artificialinteligencesummit.com</a><br/>
                       (+44) 2034517166
                     </p>
 
