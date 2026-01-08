@@ -83,7 +83,7 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
     import urllib.parse
 
     # Tracking elements
-    event_url = "https://www.eventbrite.com/e/corporate-wellbeing-expo-2026-book-your-visitor-ticket-at-premier-show-tickets-1320080178349?aff=oddtdtcreator"
+    event_url = "https://www.eventbrite.com/e/communication-technology-expo-2026book-your-visitor-ticket-at-premier-show-tickets-1652406264619?aff=oddtdtcreator"
     encoded_event_url = urllib.parse.quote(event_url, safe='')
     email_for_tracking = recipient_email if recipient_email else "unknown@example.com"
     encoded_subject = urllib.parse.quote(subject or "No Subject", safe='')
