@@ -9,8 +9,44 @@ import imaplib
 from concurrent.futures import ThreadPoolExecutor
 from time import perf_counter
 import urllib.parse
+import uuid
+import gspread
+from google.oauth2.service_account import Credentials
 
 st.set_page_config("📧 Email Campaign App", layout="wide")
+
+# --- Google Sheet Setup ---
+SHEET_NAME = "CampaignHistory"
+SCOPE = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
+@st.cache_resource
+def get_google_sheet():
+    import gspread
+    from google.oauth2.service_account import Credentials
+
+    credentials_path = "service_account.json"  # Path to secret file in Render
+    credentials = Credentials.from_service_account_file(
+        credentials_path,
+        scopes=SCOPE
+    )
+
+    gc = gspread.authorize(credentials)
+    sheet = gc.open(SHEET_NAME).sheet1
+
+    # Check if headers exist, if not, create them
+    headers = sheet.row_values(1)
+    if not headers:
+        sheet.insert_row(["timestamp", "campaign_name", "subject", "total", "delivered", "failed"], 1)
+
+    return sheet
+
+def append_to_sheet(data_dict):
+    sheet = get_google_sheet()
+    if sheet:
+        sheet.append_row(list(data_dict.values()), value_input_option="USER_ENTERED")
 
 # --- Uptime Check ---
 params = st.query_params
@@ -23,11 +59,11 @@ os.makedirs("campaign_results", exist_ok=True)
 os.makedirs("campaign_resume", exist_ok=True)
 
 # Functions
-
 def log_campaign(metadata):
-    """Save campaign metadata locally instead of Google Sheets."""
-    with open("campaigns.json", "a") as f:
-        f.write(json.dumps(metadata) + "\n")
+    #with open("campaigns.json", "w") as f:
+        #json.dump(load_campaigns_from_sheet() + [metadata], f, indent=2)
+    #append_to_sheet(metadata)
+    pass
 
 def save_resume_point(timestamp, data, last_sent_index):
     with open(f"campaign_resume/{timestamp}.json", "w") as f:
@@ -47,7 +83,7 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
     import urllib.parse
 
     # Tracking elements
-    event_url = "https://www.eventbrite.co.uk/e/ai-summit-2025-unlock-the-future-of-business-tickets-1702245194199?aff=emailcampaigns"
+    event_url = "https://www.eventbrite.com/e/corporate-wellbeing-expo-2026-book-your-visitor-ticket-at-premier-show-tickets-1320080178349?aff=oddtdtcreator"
     encoded_event_url = urllib.parse.quote(event_url, safe='')
     email_for_tracking = recipient_email if recipient_email else "unknown@example.com"
     encoded_subject = urllib.parse.quote(subject or "No Subject", safe='')
@@ -73,33 +109,37 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
                     <!-- Custom Content -->
                     {custom_html_rendered}
 
-                    <!-- Event CTA Button -->
-                    <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin-top: 30px;">
-                      <tr>
-                        <td align="center">
-                          <table role="presentation" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                              <td bgcolor="#D7262F" style="border-radius: 6px; text-align: center;">
-                                <a href="{tracking_link}" target="_blank"
-                                   style="font-size: 15px; font-family: Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 16px 28px; display: inline-block; font-weight: bold; border-radius: 6px;">
-                                  🎟️ Book Your Free Ticket Now
-                                </a>
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
+                    <!-- Event CTA Button (Improved for Gmail App) -->
+<table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin-top: 30px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td bgcolor="#D7262F" style="border-radius: 6px; text-align: center;">
+            <a href="{tracking_link}" target="_blank"
+               style="font-size: 15px; font-family: Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 16px 28px; display: inline-block; font-weight: bold; border-radius: 6px;">
+              🎟️ Book My Ticket Now
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
-                    <!-- Signature -->
-                    <p style="margin-top:25px; font-size:14px;">
-                      Mike Randell<br/>
-                      Marketing Executive | Artificialinteligencesummit<br/>
-                      <a href="mailto:mike@artificialinteligencesummit.com" style="color:#D7262F;">mike@artificialinteligencesummit.com</a><br/>
-                      (+44) 2034517166
-                    </p>
 
-                    <!-- Footer -->
+<!-- Signature (Locked) -->
+<p style="margin-top:25px; font-size:14px; font-weight:bold;">
+  Davide Vece<br/>
+  Sales Director<br/>
+  3–4 March 2026 | London Olympia<br/>
+  <a href="mailto:davidevece@communicationtechnologyexpo.com" style="color:#D7262F; font-weight:bold;">davidevece@communicationtechnologyexpo.com</a><br/>
+  (+44) 2034517166
+</p>
+
+
+
+                    <!-- Footer (Locked) -->
                     <p style="font-size:11px; color:#888; text-align:center; margin-top:30px;">
                       Not interested anymore? <a href="{unsubscribe_link}" style="color:#D7262F; text-decoration:none;">Unsubscribe here</a>.
                     </p>
@@ -113,25 +153,24 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
       </body>
     </html>
     """
-
 def send_email(sender_email, sender_password, row, subject, custom_html):
     try:
-        server = smtplib.SMTP_SSL("285235.vps-10.com", 465)
+        server = smtplib.SMTP("mail.communicationtechnologyexpo.com", 587)
+        server.starttls()
         server.login(sender_email, sender_password)
 
         msg = EmailMessage()
         msg['Subject'] = subject
         msg['From'] = sender_email
         msg['To'] = row['email']
-        
         personalized_html = custom_html.replace("{name}", row['full_name'] or "")
         msg.set_content(generate_email_html(row['full_name'], row['email'], subject, personalized_html), subtype='html')
         server.send_message(msg)
 
         try:
-            imap = imaplib.IMAP4_SSL("285235.vps-10.com",993)
+            imap = imaplib.IMAP4_SSL("mail.communicationtechnologyexpo.com")
             imap.login(sender_email, sender_password)
-            imap.append('Inbox.Sent', '', imaplib.Time2Internaldate(time.time()), msg.as_bytes())
+            imap.append('INBOX.Sent', '', imaplib.Time2Internaldate(time.time()), msg.as_bytes())
             imap.logout()
         except Exception as e:
             return (row['email'], f"✅ Delivered (⚠️ Failed to save to Sent: {e})")
@@ -152,7 +191,8 @@ def send_delivery_report(sender_email, sender_password, report_file):
         with open(report_file, 'rb') as file:
             msg.add_attachment(file.read(), maintype='application', subtype='octet-stream', filename=os.path.basename(report_file))
 
-        server = smtplib.SMTP_SSL("285235.vps-10.com", 465)
+        server = smtplib.SMTP("mail.communicationtechnologyexpo.com", 587)
+        server.starttls()
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
@@ -164,12 +204,29 @@ def send_delivery_report(sender_email, sender_password, report_file):
 # --- UI Starts Here ---
 st.title("📨 Automated Email Campaign Manager")
 
+#with st.expander("📜 View Past Campaigns"):
+   # for c in reversed(load_campaigns()):
+       # name = c.get("campaign_name", "")
+       # timestamp = c.get("timestamp", "")
+      #  label = f"📧 {name} {timestamp}" if name else f"🕒 {timestamp}"
+        #st.markdown(f"**{label}** | 👥 {c['total']} | ✅ {c['delivered']} | ❌ {c['failed']}")
+
 st.header("📤 Send Email Campaign")
-sender_email = st.text_input("Sender Email", value="mike@artificialinteligencesummit.com")
+sender_email = st.text_input("Sender Email", value="davidevece@communicationtechnologyexpo.com")
 sender_password = st.text_input("Password", type="password")
 subject = st.text_input("Email Subject")
-
+default_html = """<p>Hi <strong>{name}</strong>,</p>
+<p>Welcome to the Bournemouth B2B Growth Expo!</p>
+<p>Here’s what you can expect:</p>
+<ul>
+  <li>25+ Warm Business Leads</li>
+  <li>FREE Speaker Device & Book</li>
+  <li>Live Pitch to Investors</li>
+  <li>Designer Sofa Giveaway</li>
+</ul>
+"""
 from streamlit_quill import st_quill
+
 st.subheader("📝 Design Your Email Content (No HTML Needed)")
 custom_html = st_quill(html=True, key="editor")
 campaign_name = st.text_input("Campaign Name", placeholder="e.g. MK Expo – VIP Invite List")
