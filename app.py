@@ -133,7 +133,7 @@ def generate_email_html(full_name, recipient_email=None, subject=None, custom_ht
   Davide Vece<br/>
   Sales Director<br/>
   3–4 March 2026 | London Olympia<br/>
-  <a href="mailto:davidevece@communicationtechnologyexpo.com" style="color:#D7262F; font-weight:bold;">davidevece@communicationtechnologyexpo.com</a><br/>
+  <a href="mailto:davide@communicationtechnologyexpo.com" style="color:#D7262F; font-weight:bold;">davide@communicationtechnologyexpo.com</a><br/>
   (+44) 2034517166
 </p>
 
@@ -212,7 +212,7 @@ st.title("📨 Automated Email Campaign Manager")
         #st.markdown(f"**{label}** | 👥 {c['total']} | ✅ {c['delivered']} | ❌ {c['failed']}")
 
 st.header("📤 Send Email Campaign")
-sender_email = st.text_input("Sender Email", value="davidevece@communicationtechnologyexpo.com")
+sender_email = st.text_input("Sender Email", value="davide@communicationtechnologyexpo.com")
 sender_password = st.text_input("Password", type="password")
 subject = st.text_input("Email Subject")
 default_html = """<p>Hi <strong>{name}</strong>,</p>
